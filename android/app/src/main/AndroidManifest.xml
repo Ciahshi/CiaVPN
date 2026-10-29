@@ -17,9 +17,10 @@
     <uses-feature android:name="android.hardware.faketouch" android:required="false" />
 
     <application
-        android:label="Oblivion"
+        android:label="CiaVPN"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/ic_ciavpn"
+        android:roundIcon="@drawable/ic_ciavpn"
         android:extractNativeLibs="true"
         android:supportsRtl="true">
 
