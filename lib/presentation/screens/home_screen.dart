@@ -7,6 +7,7 @@ import '../../data/models/geo_endpoint.dart';
 import '../../data/models/tunnel_status.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../providers/tunnel_providers.dart';
+import '../widgets/ciavpn_logo.dart';
 import '../widgets/connect_switch.dart';
 import '../widgets/flag_icon.dart';
 import '../widgets/login_code_dialog.dart';
@@ -131,6 +132,8 @@ class HomeScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
+                      const CiaVpnLogoMark(size: 82),
+                      const SizedBox(height: 14),
                       Text(
                         l10n.appName.toUpperCase(),
                         textDirection: TextDirection.ltr,
