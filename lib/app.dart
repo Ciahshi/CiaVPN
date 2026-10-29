@@ -10,7 +10,6 @@ import 'l10n/generated/app_localizations.dart';
 import 'presentation/providers/app_providers.dart';
 import 'presentation/providers/tunnel_providers.dart';
 import 'presentation/screens/home_screen.dart';
-import 'presentation/screens/splash_screen.dart';
 import 'presentation/widgets/developer_note.dart';
 
 class OblivionApp extends ConsumerWidget {
@@ -103,11 +102,7 @@ class _EntryState extends ConsumerState<_Entry> {
       });
     }
 
-    if (_splashDone) {
-      _raiseDeveloperNote();
-      return const HomeScreen();
-    }
-
-    return SplashScreen(onDone: () => setState(() => _splashDone = true));
+    _splashDone = true;
+    return const HomeScreen();
   }
 }
