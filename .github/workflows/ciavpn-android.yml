@@ -1,0 +1,120 @@
+name: CiaVPN Android APK
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ciavpn-android-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.44.3"
+  PSIPHON_REF: shirokhorshid
+  GO_VERSION: "1.26"
+  GOMOBILE_VERSION: v0.0.0-20260821190718-4776eadac327
+
+jobs:
+  android:
+    name: Build CiaVPN APK (arm64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout source and required submodules
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: "17"
+          distribution: "zulu"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Set up Rust Android target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            aetherproject/aether/target
+          key: ciavpn-cargo-android-${{ hashFiles('aetherproject/aether/Cargo.lock') }}
+          restore-keys: ciavpn-cargo-android-
+
+      - name: Install Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27c
+          link-to-sdk: true
+
+      - name: Pin NDK environment
+        shell: bash
+        run: |
+          version=$(basename "$(ls -d "$ANDROID_HOME"/ndk/*/ | head -1)")
+          echo "ANDROID_NDK_VERSION=$version" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$version" >> "$GITHUB_ENV"
+          echo "Using Android NDK $version"
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: false
+
+      - name: Fetch Psiphon server list
+        shell: bash
+        run: bash tools/fetch-psiphon-servers.sh
+
+      - name: Fetch Flutter dependencies and generate localizations
+        run: |
+          flutter pub get
+          flutter gen-l10n
+
+      - name: Build release APK
+        run: flutter build apk --release --target-platform android-arm64
+
+      - name: Verify APK payload
+        shell: bash
+        run: |
+          apk=build/app/outputs/flutter-apk/app-release.apk
+          test -s "$apk"
+          for library in libaether.so libpsiphon.so liblyrebird.so; do
+            if ! unzip -l "$apk" | grep -q "lib/arm64-v8a/$library"; then
+              echo "::error::APK is missing $library"
+              exit 1
+            fi
+          done
+          if ! unzip -l "$apk" | grep -q "assets/flutter_assets/assets/psiphon/servers.dat"; then
+            echo "::error::APK is missing the bundled Psiphon server list"
+            exit 1
+          fi
+          echo "CiaVPN arm64 APK includes the existing tunnel components."
+
+      - name: Stage APK
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk dist/CiaVPN-android-arm64.apk
+          sha256sum dist/CiaVPN-android-arm64.apk > dist/SHA256SUMS.txt
+
+      - name: Upload CiaVPN APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: CiaVPN-android-arm64
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
