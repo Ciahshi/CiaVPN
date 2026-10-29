@@ -5,7 +5,7 @@ const String kFontFamily = 'Vazirmatn';
 class AppColors {
   const AppColors._();
 
-  static const Color primary = Color(0xFFFFA200);
+  static const Color primary = Color(0xFF1DC9B7);
   static const Color danger = Color(0xFFE23B3D);
   static const Color subtitle = Color(0xFF7B8D9D);
 }
@@ -48,13 +48,13 @@ class AppPalette {
   );
 
   static const AppPalette dark = AppPalette(
-    canvas: Color(0xFF1C202C),
-    card: Color(0xFF232834),
-    cardPressed: Color(0xFF2C323F),
-    separator: Color(0xFF383A45),
+    canvas: Color(0xFF0B1220),
+    card: Color(0xFF121C2E),
+    cardPressed: Color(0xFF1A2B43),
+    separator: Color(0xFF28364B),
     label: Color(0xFFFFFFFF),
     labelSecondary: AppColors.subtitle,
-    track: Color(0xFF383A45),
+    track: Color(0xFF26364D),
     isDark: true,
   );
 
