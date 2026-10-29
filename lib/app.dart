@@ -29,7 +29,7 @@ class OblivionApp extends ConsumerWidget {
     };
 
     return CupertinoApp(
-      title: 'Oblivion',
+      title: 'CiaVPN',
       debugShowCheckedModeBanner: false,
       locale: locale,
       supportedLocales: L10n.supportedLocales,
