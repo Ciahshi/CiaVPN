@@ -141,7 +141,7 @@ class SettingsStore {
   static const String _legacyTorModeKey = 'torMode';
   static const String _legacyCoreKey = 'core';
   static const String _defaultsKey = 'defaults';
-  static const int _currentDefaults = 2;
+  static const int _currentDefaults = 3;
 
   void _forgetOldDefaults() {
     if ((_prefs.getInt('$_prefix$_defaultsKey') ?? 1) >= _currentDefaults) {
@@ -152,6 +152,31 @@ class SettingsStore {
     }
     if (_string('ipVersion') == IpVersion.v4.wire) {
       unawaited(_prefs.remove('${_prefix}ipVersion'));
+    }
+    // Earlier builds defaulted to MASQUE over HTTP/3 (QUIC) with a balanced scan.
+    // On networks that block UDP this may never find a working gateway.
+    // Migrate those old defaults to HTTP/2 over TCP, Turbo scan and firewall
+    // obfuscation; keep settings that were already changed away from defaults.
+    if (_string('transport') == null ||
+        _string('transport') == MasqueTransport.http3.wire) {
+      unawaited(
+        _prefs.setString('${_prefix}transport', MasqueTransport.http2.wire),
+      );
+    }
+    if (_string('scanMode') == null ||
+        _string('scanMode') == ScanMode.balanced.wire) {
+      unawaited(
+        _prefs.setString('${_prefix}scanMode', ScanMode.turbo.wire),
+      );
+    }
+    if (_string('obfuscation') == null ||
+        _string('obfuscation') == ObfuscationProfile.balanced.wire) {
+      unawaited(
+        _prefs.setString(
+          '${_prefix}obfuscation',
+          ObfuscationProfile.firewall.wire,
+        ),
+      );
     }
     unawaited(_prefs.setInt('$_prefix$_defaultsKey', _currentDefaults));
   }
